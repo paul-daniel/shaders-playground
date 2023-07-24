@@ -584,7 +584,7 @@ var _init = require("../render/init");
     (0, _appDefault.default)();
 })();
 
-},{"./app":"5AKj5","@parcel/transformer-js/src/esmodule-helpers.js":"f7Yy5","../render/init":"7wI9g","../styles/index.scss":"dTytc"}],"5AKj5":[function(require,module,exports) {
+},{"../styles/index.scss":"dTytc","./app":"5AKj5","../render/init":"7wI9g","@parcel/transformer-js/src/esmodule-helpers.js":"f7Yy5"}],"dTytc":[function() {},{}],"5AKj5":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _three = require("three");
@@ -611,8 +611,15 @@ const startApp = ()=>{
     const ambientLight = new _three.AmbientLight("#ffffff", 0.2);
     scene.add(dirLight, ambientLight);
     // meshes
-    const geometry = new _three.IcosahedronGeometry(1, 5);
-    const material = new _three.MeshStandardMaterial();
+    const geometry = new _three.PlaneGeometry(1, 1);
+    const material = new _three.ShaderMaterial({
+        side: _three.DoubleSide,
+        vertexShader: (0, _vertexGlslDefault.default),
+        fragmentShader: (0, _fragmentGlslDefault.default)
+    });
+    console.log({
+        geometry
+    });
     const ico = new _three.Mesh(geometry, material);
     scene.add(ico);
     // GUI
@@ -642,7 +649,7 @@ const startApp = ()=>{
 };
 exports.default = startApp;
 
-},{"three":"ktPTu","three/examples/jsm/postprocessing/SavePass.js":"3kqge","three/examples/jsm/postprocessing/ShaderPass.js":"5IxTN","three/examples/jsm/shaders/BlendShader.js":"dri18","three/examples/jsm/shaders/CopyShader.js":"d0PyX","@parcel/transformer-js/src/esmodule-helpers.js":"f7Yy5","../render/init.js":"7wI9g","../shaders/vertex.glsl":"fWka7","../shaders/fragment.glsl":"6yofB"}],"ktPTu":[function(require,module,exports) {
+},{"three":"ktPTu","../render/init.js":"7wI9g","three/examples/jsm/postprocessing/SavePass.js":"3kqge","three/examples/jsm/postprocessing/ShaderPass.js":"5IxTN","three/examples/jsm/shaders/BlendShader.js":"dri18","three/examples/jsm/shaders/CopyShader.js":"d0PyX","../shaders/vertex.glsl":"fWka7","../shaders/fragment.glsl":"6yofB","@parcel/transformer-js/src/esmodule-helpers.js":"f7Yy5"}],"ktPTu":[function(require,module,exports) {
 /**
  * @license
  * Copyright 2010-2023 Three.js Authors
@@ -30595,254 +30602,7 @@ exports.export = function(dest, destName, get) {
     });
 };
 
-},{}],"3kqge":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "SavePass", ()=>SavePass);
-var _three = require("three");
-var _passJs = require("./Pass.js");
-var _copyShaderJs = require("../shaders/CopyShader.js");
-class SavePass extends (0, _passJs.Pass) {
-    constructor(renderTarget){
-        super();
-        const shader = (0, _copyShaderJs.CopyShader);
-        this.textureID = "tDiffuse";
-        this.uniforms = (0, _three.UniformsUtils).clone(shader.uniforms);
-        this.material = new (0, _three.ShaderMaterial)({
-            uniforms: this.uniforms,
-            vertexShader: shader.vertexShader,
-            fragmentShader: shader.fragmentShader,
-            blending: (0, _three.NoBlending)
-        });
-        this.renderTarget = renderTarget;
-        if (this.renderTarget === undefined) {
-            this.renderTarget = new (0, _three.WebGLRenderTarget)(1, 1, {
-                type: (0, _three.HalfFloatType)
-            }); // will be resized later
-            this.renderTarget.texture.name = "SavePass.rt";
-        }
-        this.needsSwap = false;
-        this.fsQuad = new (0, _passJs.FullScreenQuad)(this.material);
-    }
-    render(renderer, writeBuffer, readBuffer /*, deltaTime, maskActive */ ) {
-        if (this.uniforms[this.textureID]) this.uniforms[this.textureID].value = readBuffer.texture;
-        renderer.setRenderTarget(this.renderTarget);
-        if (this.clear) renderer.clear();
-        this.fsQuad.render(renderer);
-    }
-    setSize(width, height) {
-        this.renderTarget.setSize(width, height);
-    }
-    dispose() {
-        this.renderTarget.dispose();
-        this.material.dispose();
-        this.fsQuad.dispose();
-    }
-}
-
-},{"three":"ktPTu","./Pass.js":"i2IfB","../shaders/CopyShader.js":"d0PyX","@parcel/transformer-js/src/esmodule-helpers.js":"f7Yy5"}],"i2IfB":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "Pass", ()=>Pass);
-parcelHelpers.export(exports, "FullScreenQuad", ()=>FullScreenQuad);
-var _three = require("three");
-class Pass {
-    constructor(){
-        this.isPass = true;
-        // if set to true, the pass is processed by the composer
-        this.enabled = true;
-        // if set to true, the pass indicates to swap read and write buffer after rendering
-        this.needsSwap = true;
-        // if set to true, the pass clears its buffer before rendering
-        this.clear = false;
-        // if set to true, the result of the pass is rendered to screen. This is set automatically by EffectComposer.
-        this.renderToScreen = false;
-    }
-    setSize() {}
-    render() {
-        console.error("THREE.Pass: .render() must be implemented in derived pass.");
-    }
-    dispose() {}
-}
-// Helper for passes that need to fill the viewport with a single quad.
-const _camera = new (0, _three.OrthographicCamera)(-1, 1, 1, -1, 0, 1);
-// https://github.com/mrdoob/three.js/pull/21358
-const _geometry = new (0, _three.BufferGeometry)();
-_geometry.setAttribute("position", new (0, _three.Float32BufferAttribute)([
-    -1,
-    3,
-    0,
-    -1,
-    -1,
-    0,
-    3,
-    -1,
-    0
-], 3));
-_geometry.setAttribute("uv", new (0, _three.Float32BufferAttribute)([
-    0,
-    2,
-    0,
-    0,
-    2,
-    0
-], 2));
-class FullScreenQuad {
-    constructor(material){
-        this._mesh = new (0, _three.Mesh)(_geometry, material);
-    }
-    dispose() {
-        this._mesh.geometry.dispose();
-    }
-    render(renderer) {
-        renderer.render(this._mesh, _camera);
-    }
-    get material() {
-        return this._mesh.material;
-    }
-    set material(value) {
-        this._mesh.material = value;
-    }
-}
-
-},{"three":"ktPTu","@parcel/transformer-js/src/esmodule-helpers.js":"f7Yy5"}],"d0PyX":[function(require,module,exports) {
-/**
- * Full-screen textured quad shader
- */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "CopyShader", ()=>CopyShader);
-const CopyShader = {
-    name: "CopyShader",
-    uniforms: {
-        "tDiffuse": {
-            value: null
-        },
-        "opacity": {
-            value: 1.0
-        }
-    },
-    vertexShader: /* glsl */ `
-
-		varying vec2 vUv;
-
-		void main() {
-
-			vUv = uv;
-			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-
-		}`,
-    fragmentShader: /* glsl */ `
-
-		uniform float opacity;
-
-		uniform sampler2D tDiffuse;
-
-		varying vec2 vUv;
-
-		void main() {
-
-			vec4 texel = texture2D( tDiffuse, vUv );
-			gl_FragColor = opacity * texel;
-
-
-		}`
-};
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"f7Yy5"}],"5IxTN":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "ShaderPass", ()=>ShaderPass);
-var _three = require("three");
-var _passJs = require("./Pass.js");
-class ShaderPass extends (0, _passJs.Pass) {
-    constructor(shader, textureID){
-        super();
-        this.textureID = textureID !== undefined ? textureID : "tDiffuse";
-        if (shader instanceof (0, _three.ShaderMaterial)) {
-            this.uniforms = shader.uniforms;
-            this.material = shader;
-        } else if (shader) {
-            this.uniforms = (0, _three.UniformsUtils).clone(shader.uniforms);
-            this.material = new (0, _three.ShaderMaterial)({
-                name: shader.name !== undefined ? shader.name : "unspecified",
-                defines: Object.assign({}, shader.defines),
-                uniforms: this.uniforms,
-                vertexShader: shader.vertexShader,
-                fragmentShader: shader.fragmentShader
-            });
-        }
-        this.fsQuad = new (0, _passJs.FullScreenQuad)(this.material);
-    }
-    render(renderer, writeBuffer, readBuffer /*, deltaTime, maskActive */ ) {
-        if (this.uniforms[this.textureID]) this.uniforms[this.textureID].value = readBuffer.texture;
-        this.fsQuad.material = this.material;
-        if (this.renderToScreen) {
-            renderer.setRenderTarget(null);
-            this.fsQuad.render(renderer);
-        } else {
-            renderer.setRenderTarget(writeBuffer);
-            // TODO: Avoid using autoClear properties, see https://github.com/mrdoob/three.js/pull/15571#issuecomment-465669600
-            if (this.clear) renderer.clear(renderer.autoClearColor, renderer.autoClearDepth, renderer.autoClearStencil);
-            this.fsQuad.render(renderer);
-        }
-    }
-    dispose() {
-        this.material.dispose();
-        this.fsQuad.dispose();
-    }
-}
-
-},{"three":"ktPTu","./Pass.js":"i2IfB","@parcel/transformer-js/src/esmodule-helpers.js":"f7Yy5"}],"dri18":[function(require,module,exports) {
-/**
- * Blend two textures
- */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "BlendShader", ()=>BlendShader);
-const BlendShader = {
-    uniforms: {
-        "tDiffuse1": {
-            value: null
-        },
-        "tDiffuse2": {
-            value: null
-        },
-        "mixRatio": {
-            value: 0.5
-        },
-        "opacity": {
-            value: 1.0
-        }
-    },
-    vertexShader: /* glsl */ `
-
-		varying vec2 vUv;
-
-		void main() {
-
-			vUv = uv;
-			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-
-		}`,
-    fragmentShader: /* glsl */ `
-
-		uniform float opacity;
-		uniform float mixRatio;
-
-		uniform sampler2D tDiffuse1;
-		uniform sampler2D tDiffuse2;
-
-		varying vec2 vUv;
-
-		void main() {
-
-			vec4 texel1 = texture2D( tDiffuse1, vUv );
-			vec4 texel2 = texture2D( tDiffuse2, vUv );
-			gl_FragColor = opacity * mix( texel1, texel2, mixRatio );
-
-		}`
-};
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"f7Yy5"}],"7wI9g":[function(require,module,exports) {
+},{}],"7wI9g":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "initEngine", ()=>initEngine);
@@ -32315,7 +32075,159 @@ class EffectComposer {
     }
 }
 
-},{"three":"ktPTu","../shaders/CopyShader.js":"d0PyX","./ShaderPass.js":"5IxTN","./MaskPass.js":"jn76N","@parcel/transformer-js/src/esmodule-helpers.js":"f7Yy5"}],"jn76N":[function(require,module,exports) {
+},{"three":"ktPTu","../shaders/CopyShader.js":"d0PyX","./ShaderPass.js":"5IxTN","./MaskPass.js":"jn76N","@parcel/transformer-js/src/esmodule-helpers.js":"f7Yy5"}],"d0PyX":[function(require,module,exports) {
+/**
+ * Full-screen textured quad shader
+ */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "CopyShader", ()=>CopyShader);
+const CopyShader = {
+    name: "CopyShader",
+    uniforms: {
+        "tDiffuse": {
+            value: null
+        },
+        "opacity": {
+            value: 1.0
+        }
+    },
+    vertexShader: /* glsl */ `
+
+		varying vec2 vUv;
+
+		void main() {
+
+			vUv = uv;
+			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+
+		}`,
+    fragmentShader: /* glsl */ `
+
+		uniform float opacity;
+
+		uniform sampler2D tDiffuse;
+
+		varying vec2 vUv;
+
+		void main() {
+
+			vec4 texel = texture2D( tDiffuse, vUv );
+			gl_FragColor = opacity * texel;
+
+
+		}`
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"f7Yy5"}],"5IxTN":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "ShaderPass", ()=>ShaderPass);
+var _three = require("three");
+var _passJs = require("./Pass.js");
+class ShaderPass extends (0, _passJs.Pass) {
+    constructor(shader, textureID){
+        super();
+        this.textureID = textureID !== undefined ? textureID : "tDiffuse";
+        if (shader instanceof (0, _three.ShaderMaterial)) {
+            this.uniforms = shader.uniforms;
+            this.material = shader;
+        } else if (shader) {
+            this.uniforms = (0, _three.UniformsUtils).clone(shader.uniforms);
+            this.material = new (0, _three.ShaderMaterial)({
+                name: shader.name !== undefined ? shader.name : "unspecified",
+                defines: Object.assign({}, shader.defines),
+                uniforms: this.uniforms,
+                vertexShader: shader.vertexShader,
+                fragmentShader: shader.fragmentShader
+            });
+        }
+        this.fsQuad = new (0, _passJs.FullScreenQuad)(this.material);
+    }
+    render(renderer, writeBuffer, readBuffer /*, deltaTime, maskActive */ ) {
+        if (this.uniforms[this.textureID]) this.uniforms[this.textureID].value = readBuffer.texture;
+        this.fsQuad.material = this.material;
+        if (this.renderToScreen) {
+            renderer.setRenderTarget(null);
+            this.fsQuad.render(renderer);
+        } else {
+            renderer.setRenderTarget(writeBuffer);
+            // TODO: Avoid using autoClear properties, see https://github.com/mrdoob/three.js/pull/15571#issuecomment-465669600
+            if (this.clear) renderer.clear(renderer.autoClearColor, renderer.autoClearDepth, renderer.autoClearStencil);
+            this.fsQuad.render(renderer);
+        }
+    }
+    dispose() {
+        this.material.dispose();
+        this.fsQuad.dispose();
+    }
+}
+
+},{"three":"ktPTu","./Pass.js":"i2IfB","@parcel/transformer-js/src/esmodule-helpers.js":"f7Yy5"}],"i2IfB":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "Pass", ()=>Pass);
+parcelHelpers.export(exports, "FullScreenQuad", ()=>FullScreenQuad);
+var _three = require("three");
+class Pass {
+    constructor(){
+        this.isPass = true;
+        // if set to true, the pass is processed by the composer
+        this.enabled = true;
+        // if set to true, the pass indicates to swap read and write buffer after rendering
+        this.needsSwap = true;
+        // if set to true, the pass clears its buffer before rendering
+        this.clear = false;
+        // if set to true, the result of the pass is rendered to screen. This is set automatically by EffectComposer.
+        this.renderToScreen = false;
+    }
+    setSize() {}
+    render() {
+        console.error("THREE.Pass: .render() must be implemented in derived pass.");
+    }
+    dispose() {}
+}
+// Helper for passes that need to fill the viewport with a single quad.
+const _camera = new (0, _three.OrthographicCamera)(-1, 1, 1, -1, 0, 1);
+// https://github.com/mrdoob/three.js/pull/21358
+const _geometry = new (0, _three.BufferGeometry)();
+_geometry.setAttribute("position", new (0, _three.Float32BufferAttribute)([
+    -1,
+    3,
+    0,
+    -1,
+    -1,
+    0,
+    3,
+    -1,
+    0
+], 3));
+_geometry.setAttribute("uv", new (0, _three.Float32BufferAttribute)([
+    0,
+    2,
+    0,
+    0,
+    2,
+    0
+], 2));
+class FullScreenQuad {
+    constructor(material){
+        this._mesh = new (0, _three.Mesh)(_geometry, material);
+    }
+    dispose() {
+        this._mesh.geometry.dispose();
+    }
+    render(renderer) {
+        renderer.render(this._mesh, _camera);
+    }
+    get material() {
+        return this._mesh.material;
+    }
+    set material(value) {
+        this._mesh.material = value;
+    }
+}
+
+},{"three":"ktPTu","@parcel/transformer-js/src/esmodule-helpers.js":"f7Yy5"}],"jn76N":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "MaskPass", ()=>MaskPass);
@@ -32477,12 +32389,107 @@ class TickManager extends EventTarget {
 }
 exports.default = TickManager;
 
-},{"./init.js":"7wI9g","@parcel/transformer-js/src/esmodule-helpers.js":"f7Yy5"}],"fWka7":[function(require,module,exports) {
-module.exports = "#define GLSLIFY 1\n";
+},{"./init.js":"7wI9g","@parcel/transformer-js/src/esmodule-helpers.js":"f7Yy5"}],"3kqge":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "SavePass", ()=>SavePass);
+var _three = require("three");
+var _passJs = require("./Pass.js");
+var _copyShaderJs = require("../shaders/CopyShader.js");
+class SavePass extends (0, _passJs.Pass) {
+    constructor(renderTarget){
+        super();
+        const shader = (0, _copyShaderJs.CopyShader);
+        this.textureID = "tDiffuse";
+        this.uniforms = (0, _three.UniformsUtils).clone(shader.uniforms);
+        this.material = new (0, _three.ShaderMaterial)({
+            uniforms: this.uniforms,
+            vertexShader: shader.vertexShader,
+            fragmentShader: shader.fragmentShader,
+            blending: (0, _three.NoBlending)
+        });
+        this.renderTarget = renderTarget;
+        if (this.renderTarget === undefined) {
+            this.renderTarget = new (0, _three.WebGLRenderTarget)(1, 1, {
+                type: (0, _three.HalfFloatType)
+            }); // will be resized later
+            this.renderTarget.texture.name = "SavePass.rt";
+        }
+        this.needsSwap = false;
+        this.fsQuad = new (0, _passJs.FullScreenQuad)(this.material);
+    }
+    render(renderer, writeBuffer, readBuffer /*, deltaTime, maskActive */ ) {
+        if (this.uniforms[this.textureID]) this.uniforms[this.textureID].value = readBuffer.texture;
+        renderer.setRenderTarget(this.renderTarget);
+        if (this.clear) renderer.clear();
+        this.fsQuad.render(renderer);
+    }
+    setSize(width, height) {
+        this.renderTarget.setSize(width, height);
+    }
+    dispose() {
+        this.renderTarget.dispose();
+        this.material.dispose();
+        this.fsQuad.dispose();
+    }
+}
+
+},{"three":"ktPTu","./Pass.js":"i2IfB","../shaders/CopyShader.js":"d0PyX","@parcel/transformer-js/src/esmodule-helpers.js":"f7Yy5"}],"dri18":[function(require,module,exports) {
+/**
+ * Blend two textures
+ */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "BlendShader", ()=>BlendShader);
+const BlendShader = {
+    uniforms: {
+        "tDiffuse1": {
+            value: null
+        },
+        "tDiffuse2": {
+            value: null
+        },
+        "mixRatio": {
+            value: 0.5
+        },
+        "opacity": {
+            value: 1.0
+        }
+    },
+    vertexShader: /* glsl */ `
+
+		varying vec2 vUv;
+
+		void main() {
+
+			vUv = uv;
+			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+
+		}`,
+    fragmentShader: /* glsl */ `
+
+		uniform float opacity;
+		uniform float mixRatio;
+
+		uniform sampler2D tDiffuse1;
+		uniform sampler2D tDiffuse2;
+
+		varying vec2 vUv;
+
+		void main() {
+
+			vec4 texel1 = texture2D( tDiffuse1, vUv );
+			vec4 texel2 = texture2D( tDiffuse2, vUv );
+			gl_FragColor = opacity * mix( texel1, texel2, mixRatio );
+
+		}`
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"f7Yy5"}],"fWka7":[function(require,module,exports) {
+module.exports = '#define GLSLIFY 1\n// projectionMatrix - uniform\n// modelViewMatrix - uniform\n// position  - attribute\n\n/*\n    attributes are vertex specific datas. They are not accessible on fragment shaders.\n    uniforms on the other hand are accessible in both and are the same for every vertex.\n\n    modelViewMatrix = modelMatrix * ViewMatrix\n    transform -> position, scale, rotation\n    model matrix provide the "transform" for our model(the objects on the scene)\n    view matrix provide the "transform" for our camera\n    projection matrix : project our object on the screen taking into account aspect ration and perspective.\n\n    MVP -> PVM (projection, view, model)\n\n    uv is used to map textures to our model.\n    varying are use to enable communication between vertex shader to fragment shader\n*/\n\nvarying vec3 vPosition;\nvarying vec3 vNormal;\nvarying vec2 vUv;\n\nvoid main() {\n    vPosition = position;\n    vNormal = normal;\n    vUv = uv;\n\n    vec4 modelViewPosition = modelViewMatrix * vec4(position, 1);\n    vec4 projectedPosition = projectionMatrix * modelViewPosition;\n\n    gl_Position = projectedPosition;\n}';
 
 },{}],"6yofB":[function(require,module,exports) {
-module.exports = "#define GLSLIFY 1\n";
+module.exports = "#define GLSLIFY 1\nvarying vec3 vPosition;\nvarying vec3 vNormal;\nvarying vec2 vUv;\n\nvoid main() {\n    gl_FragColor = vec4(vUv.xxx, 1.0);\n}";
 
-},{}],"dTytc":[function() {},{}]},["coKnw","1Z4Rq"], "1Z4Rq", "parcelRequireb245")
+},{}]},["coKnw","1Z4Rq"], "1Z4Rq", "parcelRequireb245")
 
 //# sourceMappingURL=template.5d9dacde.js.map

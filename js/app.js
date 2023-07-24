@@ -36,13 +36,17 @@ const startApp = () => {
 
 
   // meshes
-  const geometry = new THREE.IcosahedronGeometry(1, 5)
-  const material = new THREE.MeshStandardMaterial()
+  const geometry = new THREE.PlaneGeometry(1,1);
+  const material = new THREE.ShaderMaterial({
+    side : THREE.DoubleSide,
+    vertexShader : vertexShader,
+    fragmentShader : fragmentShader
+  })
+
+  console.log({geometry})
 
   const ico = new THREE.Mesh(geometry, material)
   scene.add(ico)
-
-
 
 
 
